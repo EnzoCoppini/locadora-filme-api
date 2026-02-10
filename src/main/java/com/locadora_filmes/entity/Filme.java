@@ -41,6 +41,9 @@ public class Filme {
     @Column(name = "ano_lancamento", nullable = false)
     private Integer anoLancamento;
 
+    @Column(name = "preco")
+    private Double preco;
+
 
     @Column(name = "quantidade_estoque", nullable = false)
     private Integer quantidadeEstoque;
