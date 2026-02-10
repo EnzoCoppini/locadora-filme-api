@@ -11,9 +11,9 @@ public class LocacaoService {
     private final LocacaoRepository locacaoRepository;
     private final FilmeRepository filmeRepository;
 
+
     public LocacaoService(LocacaoRepository locacaoRepository, FilmeRepository filmeRepository){
         this.locacaoRepository = locacaoRepository;
         this.filmeRepository = filmeRepository;
     }
-
 }
