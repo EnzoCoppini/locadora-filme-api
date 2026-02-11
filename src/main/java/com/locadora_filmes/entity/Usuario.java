@@ -42,7 +42,7 @@ public class Usuario {
     private String cpfUsuario;
 
     @Column(name = "data_nascimento", nullable = false)
-    private LocalDate dataNacimento;
+    private LocalDate dataNascimento;
 
 
     @Enumerated(EnumType.STRING)
