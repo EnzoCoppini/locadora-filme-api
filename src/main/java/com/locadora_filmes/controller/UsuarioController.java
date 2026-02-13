@@ -1,6 +1,7 @@
 package com.locadora_filmes.controller;
 
 
+import com.locadora_filmes.DTOs.UsuarioDTO;
 import com.locadora_filmes.entity.Usuario;
 import com.locadora_filmes.service.UsuarioService;
 import org.springframework.http.HttpStatus;
@@ -41,15 +42,17 @@ public class UsuarioController {
     }
 
     @DeleteMapping("{id}")
-    public ResponseEntity<Void> removerUsuario(@PathVariable Long id){
+    public ResponseEntity<Void> removerUsuarioPorId(@PathVariable Long id){
         usuarioService.deletarPorId(id);
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Usuario> atualizarUsuario(@PathVariable Long id, @RequestBody Usuario usuarioAtualizado){
-        return ResponseEntity.ok(usuarioService.atualizarUsuario(id, usuarioAtualizado));
-    }
+    @PatchMapping("/{id}")
+    public ResponseEntity<Usuario> atualizarUsuario(@PathVariable Long id, @RequestBody UsuarioDTO usuarioDTO){
 
+        Usuario usuarioAtualizado = usuarioService.atualizarUsuario(id, usuarioDTO);
+
+        return ResponseEntity.ok(usuarioAtualizado);
+    }
 }
 
