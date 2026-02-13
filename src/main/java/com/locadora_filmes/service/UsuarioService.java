@@ -1,6 +1,7 @@
 package com.locadora_filmes.service;
 
 
+import com.locadora_filmes.DTOs.UsuarioDTO;
 import com.locadora_filmes.entity.Usuario;
 import com.locadora_filmes.exception.EntidadeNaoEncontradaException;
 import com.locadora_filmes.exception.RegraDeNegocioException;
@@ -51,7 +52,7 @@ public class UsuarioService {
         usuarioRepository.deleteById(id);
     }
 
-    public Usuario atualizarUsuario(Long id, Usuario usuarioAtualizado){
+    /*public Usuario atualizarUsuario(Long id, Usuario usuarioAtualizado){
         Usuario usuarioExistente = usuarioRepository.findById(id).orElseThrow(() -> new EntidadeNaoEncontradaException("Id: " + id + " não encontrado"));
 
         usuarioExistente.setNomeUsuario(usuarioAtualizado.getNomeUsuario());
@@ -62,6 +63,30 @@ public class UsuarioService {
         usuarioExistente.setTipo(usuarioAtualizado.getTipo());
 
         return usuarioRepository.save(usuarioExistente);
+    }*/
+
+    public Usuario atualizarUsuario(Long id, UsuarioDTO usuarioDTO){
+
+        Usuario usuario = usuarioRepository.findById(id).orElseThrow(() -> new EntidadeNaoEncontradaException("Id: " + id + " não foi encontrado"));
+
+        if (usuarioDTO.getNomeUsuario() != null) {
+            usuario.setNomeUsuario(usuarioDTO.getNomeUsuario());
+        }
+
+        if (usuarioDTO.getEmailUsuario() != null) {
+            usuario.setEmailUsuario(usuarioDTO.getEmailUsuario());
+        }
+
+        if (usuarioDTO.getSenhaUsuario() != null) {
+            usuario.setSenhaUsuario(usuarioDTO.getSenhaUsuario());
+        }
+
+        if (usuarioDTO.getDataNascimento() != null) {
+            usuario.setDataNascimento(usuarioDTO.getDataNascimento());
+        }
+
+        return usuarioRepository.save(usuario);
+
     }
 
 
