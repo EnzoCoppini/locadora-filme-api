@@ -20,7 +20,7 @@ public class Usuario {
 
     public enum tipoUsuario{
         ADMIN,
-        CLiENTE
+        CLIENTE
     }
 
 
