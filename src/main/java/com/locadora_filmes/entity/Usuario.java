@@ -1,10 +1,8 @@
 package com.locadora_filmes.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -13,7 +11,7 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
-
+@Builder
 @Entity
 @Table(name = "usuario")
 public class Usuario {
@@ -32,7 +30,7 @@ public class Usuario {
     @Column(name = "nome_usuario", nullable = false)
     private String nomeUsuario;
 
-    @Column(name = "email_usuario", nullable = false)
+    @Column(name = "email_usuario", nullable = false, unique = true)
     private String emailUsuario;
 
     @Column(name = "senha_usuario")
@@ -49,6 +47,7 @@ public class Usuario {
     private tipoUsuario tipo;
 
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<Locacao> locacoes;
 
 
