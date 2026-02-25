@@ -1,9 +1,10 @@
 package com.locadora_filmes.controller;
 
-
-import com.locadora_filmes.DTOs.UsuarioDTO;
-import com.locadora_filmes.entity.Usuario;
+import com.locadora_filmes.DTOs.request.usuario.UsuarioRequest;
+import com.locadora_filmes.DTOs.request.usuario.UsuarioUpdateRequest;
+import com.locadora_filmes.DTOs.response.usuario.UsuarioResponse;
 import com.locadora_filmes.service.UsuarioService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/usuario")
+@RequestMapping("/api/usuarios")
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
@@ -21,38 +22,35 @@ public class UsuarioController {
     }
 
     @PostMapping
-    public ResponseEntity<Usuario> cadastrarUsuario(@RequestBody Usuario usuario) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(usuarioService.cadastrarUsuario(usuario));
+    public ResponseEntity<UsuarioResponse> cadastrar(@Valid @RequestBody UsuarioRequest request) {
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(usuarioService.cadastrarUsuario(request));
     }
 
     @GetMapping
-    public ResponseEntity<List<Usuario>> listarUsuarios () {
+    public ResponseEntity<List<UsuarioResponse>> listar(){
         return ResponseEntity.ok(usuarioService.listarUsuarios());
-
     }
 
-    @GetMapping("{id}")
-    public ResponseEntity<Usuario> buscarPorId(@PathVariable Long id){
-        return ResponseEntity.ok(usuarioService.listarPorId(id));
+    @GetMapping("/{id}")
+    public ResponseEntity<UsuarioResponse> buscarPorId(@PathVariable Long id){
+        return ResponseEntity.ok(usuarioService.buscarPorId(id));
     }
 
     @GetMapping("/email/{email}")
-    public ResponseEntity<Usuario> buscarPorEmail(@PathVariable String email){
-        return ResponseEntity.ok(usuarioService.listarPorEmail(email));
-    }
-
-    @DeleteMapping("{id}")
-    public ResponseEntity<Void> removerUsuarioPorId(@PathVariable Long id){
-        usuarioService.deletarPorId(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<UsuarioResponse> buscarPorEmail(@PathVariable String email){
+        return ResponseEntity.ok(usuarioService.buscarPorEmail(email));
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<Usuario> atualizarUsuario(@PathVariable Long id, @RequestBody UsuarioDTO usuarioDTO){
-
-        Usuario usuarioAtualizado = usuarioService.atualizarUsuario(id, usuarioDTO);
-
+    public ResponseEntity<UsuarioResponse> atualizarUsuario(@PathVariable Long id, @Valid @RequestBody UsuarioUpdateRequest usuarioDTO) {
+        UsuarioResponse usuarioAtualizado = usuarioService.atualizarUsuario(id, usuarioDTO);
         return ResponseEntity.ok(usuarioAtualizado);
     }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletar(@PathVariable Long id){
+        usuarioService.deletarPorId(id);
+        return ResponseEntity.noContent().build();
+    }
 }
-
