@@ -1,10 +1,8 @@
 package com.locadora_filmes.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalTime;
 import java.util.List;
@@ -13,7 +11,7 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
-
+@Builder
 @Entity
 @Table(name = "filme")
 public class Filme {
@@ -21,9 +19,9 @@ public class Filme {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_filme")
-    private Long idFiilme;
+    private Long idFilme;
 
-    @Column(name = "titulo", nullable = false)
+    @Column(name = "titulo", nullable = false, unique = true)
     private String titulo;
 
     @Column(name = "duracao", nullable = false)
@@ -44,12 +42,12 @@ public class Filme {
     @Column(name = "preco")
     private Double preco;
 
-
     @Column(name = "quantidade_estoque", nullable = false)
     private Integer quantidadeEstoque;
 
 
     @OneToMany(mappedBy = "filme", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<Locacao> historicoLocacoes;
 
 }
