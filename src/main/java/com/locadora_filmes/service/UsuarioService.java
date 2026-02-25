@@ -1,7 +1,9 @@
 package com.locadora_filmes.service;
 
-
-import com.locadora_filmes.DTOs.UsuarioDTO;
+import com.locadora_filmes.DTOs.request.usuario.UsuarioRequest;
+import com.locadora_filmes.DTOs.request.usuario.UsuarioUpdateRequest;
+import com.locadora_filmes.DTOs.response.usuario.UsuarioResponse;
+import com.locadora_filmes.mapper.UsuarioMapper;
 import com.locadora_filmes.entity.Usuario;
 import com.locadora_filmes.exception.EntidadeNaoEncontradaException;
 import com.locadora_filmes.exception.RegraDeNegocioException;
@@ -9,85 +11,78 @@ import com.locadora_filmes.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
+    private final UsuarioMapper usuarioMapper;
 
-    public UsuarioService (UsuarioRepository usuarioRepository){
+    public UsuarioService(UsuarioRepository usuarioRepository,
+                          UsuarioMapper usuarioMapper) {
         this.usuarioRepository = usuarioRepository;
+        this.usuarioMapper = usuarioMapper;
     }
 
-    public Usuario cadastrarUsuario(Usuario usuario){
-        if(usuarioRepository.findByEmailUsuario(usuario.getEmailUsuario()).isPresent()){
-            throw new RegraDeNegocioException("O email " + usuario.getEmailUsuario() + " ja está em uso");
+    public UsuarioResponse cadastrarUsuario(UsuarioRequest request){
+
+        if (usuarioRepository.findByEmailUsuario(request.emailUsuario()).isPresent()){
+            throw new RegraDeNegocioException("Email já está em uso.");
         }
-        return usuarioRepository.save(usuario);
+
+        Usuario usuario = usuarioMapper.toEntity(request);
+        Usuario salvo = usuarioRepository.save(usuario);
+
+        return usuarioMapper.toDto(salvo);
     }
 
-    public List<Usuario> listarUsuarios(){
-        if(usuarioRepository.count() == 0){
-            throw new EntidadeNaoEncontradaException("Nenhum cadastro feito no sistema.");
+    public List<UsuarioResponse> listarUsuarios(){
+
+        List<Usuario> usuarios = usuarioRepository.findAll();
+
+        if (usuarios.isEmpty()){
+            throw new EntidadeNaoEncontradaException("Nenhum usuário cadastrado.");
         }
-        return usuarioRepository.findAll();
+
+        return usuarios.stream()
+                .map(usuarioMapper::toDto)
+                .toList();
     }
 
-    public Usuario listarPorEmail(String emailUsuario){
-        if(usuarioRepository.count() == 0){
-            throw new EntidadeNaoEncontradaException("Nenhum cadastro feito no sistema.");
-        }
-        return usuarioRepository.findByEmailUsuario(emailUsuario).orElseThrow(() -> new EntidadeNaoEncontradaException("Email: " +emailUsuario + " não encontrado."));
+    public UsuarioResponse buscarPorId(Long id){
+
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Usuário não encontrado."));
+
+        return usuarioMapper.toDto(usuario);
     }
 
-    public Usuario listarPorId(Long id){
-        return usuarioRepository.findById(id).orElseThrow(() -> new EntidadeNaoEncontradaException("Id: " + id + " não encontrado."));
+    public UsuarioResponse buscarPorEmail(String email){
+
+        Usuario usuario = usuarioRepository.findByEmailUsuario(email)
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Email não encontrado."));
+
+        return usuarioMapper.toDto(usuario);
     }
 
     public void deletarPorId(Long id){
-       if (!usuarioRepository.existsById(id)){
-           throw new EntidadeNaoEncontradaException("Não foi possível deletar. ID: " + id + " não encontrado.");
-       }
+
+        if (!usuarioRepository.existsById(id)){
+            throw new EntidadeNaoEncontradaException("Usuário não encontrado.");
+        }
+
         usuarioRepository.deleteById(id);
     }
 
-    /*public Usuario atualizarUsuario(Long id, Usuario usuarioAtualizado){
-        Usuario usuarioExistente = usuarioRepository.findById(id).orElseThrow(() -> new EntidadeNaoEncontradaException("Id: " + id + " não encontrado"));
 
-        usuarioExistente.setNomeUsuario(usuarioAtualizado.getNomeUsuario());
-        usuarioExistente.setEmailUsuario(usuarioAtualizado.getEmailUsuario());
-        usuarioExistente.setSenhaUsuario(usuarioAtualizado.getSenhaUsuario());
-        usuarioExistente.setCpfUsuario(usuarioAtualizado.getCpfUsuario());
-        usuarioExistente.setDataNascimento(usuarioAtualizado.getDataNascimento());
-        usuarioExistente.setTipo(usuarioAtualizado.getTipo());
-
-        return usuarioRepository.save(usuarioExistente);
-    }*/
-
-    public Usuario atualizarUsuario(Long id, UsuarioDTO usuarioDTO){
+    public UsuarioResponse atualizarUsuario(Long id, UsuarioUpdateRequest usuarioDTO){
 
         Usuario usuario = usuarioRepository.findById(id).orElseThrow(() -> new EntidadeNaoEncontradaException("Id: " + id + " não foi encontrado"));
 
-        if (usuarioDTO.getNomeUsuario() != null) {
-            usuario.setNomeUsuario(usuarioDTO.getNomeUsuario());
-        }
+        usuarioMapper.updateEntityFromDto(usuarioDTO, usuario);
 
-        if (usuarioDTO.getEmailUsuario() != null) {
-            usuario.setEmailUsuario(usuarioDTO.getEmailUsuario());
-        }
+        Usuario usuarioAtualizado = usuarioRepository.save(usuario);
 
-        if (usuarioDTO.getSenhaUsuario() != null) {
-            usuario.setSenhaUsuario(usuarioDTO.getSenhaUsuario());
-        }
-
-        if (usuarioDTO.getDataNascimento() != null) {
-            usuario.setDataNascimento(usuarioDTO.getDataNascimento());
-        }
-
-        return usuarioRepository.save(usuario);
-
+        return usuarioMapper.toDto(usuarioAtualizado);
     }
-
-
 }
