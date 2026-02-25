@@ -2,11 +2,20 @@ package com.locadora_filmes.entity;
 
 
 import jakarta.persistence.*;
+import lombok.*;
 
 import java.time.LocalDate;
 
-@Entity
+
+@Getter
+@Setter
+
+@AllArgsConstructor
+@NoArgsConstructor
+
+@Builder
 @Table(name = "locacao")
+@Entity
 public class Locacao {
 
     @Id
@@ -21,7 +30,7 @@ public class Locacao {
     private LocalDate dataDevolucao;
 
     @Column(name = "devolvido", nullable = false)
-    private Boolean devolvido = false;
+    private boolean devolvido = false;
 
 
     @ManyToOne //muitos registro de locacao  para um usuario
