@@ -1,7 +1,10 @@
 package com.locadora_filmes.service;
 
 
-import com.locadora_filmes.DTOs.FilmeDTO;
+import com.locadora_filmes.DTOs.request.filme.FilmeRequest;
+import com.locadora_filmes.DTOs.request.filme.FilmeUpdateRequest;
+import com.locadora_filmes.DTOs.response.filme.FilmeResponse;
+import com.locadora_filmes.mapper.FilmeMapper;
 import com.locadora_filmes.entity.Filme;
 import com.locadora_filmes.exception.EntidadeNaoEncontradaException;
 import com.locadora_filmes.exception.RegraDeNegocioException;
@@ -9,84 +12,65 @@ import com.locadora_filmes.repository.FilmeRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class FilmeService {
 
 
     private final FilmeRepository filmeRepository;
+    private final FilmeMapper filmeMapper;
 
-    public FilmeService(FilmeRepository filmeRepository){
+    public FilmeService(FilmeRepository filmeRepository, FilmeMapper filmeMapper) {
         this.filmeRepository = filmeRepository;
+        this.filmeMapper = filmeMapper;
     }
 
-    public Filme cadastrarFilme(Filme filme){
-       if (filmeRepository.existsByTituloIgnoreCase(filme.getTitulo())){
-           throw new RegraDeNegocioException("Titulo ja cadastrado.");
-       }
-        return filmeRepository.save(filme);
+    public FilmeResponse cadastrarFilme(FilmeRequest filmeRequest) {
+        if (filmeRepository.existsByTituloIgnoreCase(filmeRequest.titulo())) {
+            throw new RegraDeNegocioException("Titulo ja cadastrado.");
+        }
+        Filme filme = filmeMapper.toEntity(filmeRequest);
+        Filme filmeSalvo = filmeRepository.save(filme);
+        return filmeMapper.toDto(filmeSalvo);
+
+    }
+
+    public FilmeResponse buscarPorTitulo(String titulo) {
+
+        Filme filme = filmeRepository.findByTituloIgnoreCase(titulo)
+                .orElseThrow(() ->
+                        new EntidadeNaoEncontradaException("Título: " + titulo + " não encontrado"));
+
+        return filmeMapper.toDto(filme);
     }
 
     //locacao
-    public Filme buscarPorTitulo(String titulo){
-        return filmeRepository.findByTituloIgnoreCase(titulo).orElseThrow(() -> new EntidadeNaoEncontradaException("Titulo não encontrado."));
-    }
-
-    //locacao
-    public List<Filme> listarFilme (){
+    public List<FilmeResponse> listarFilmes() {
 
         List<Filme> filmes = filmeRepository.findAll();
-        if (filmes.isEmpty()){
+        if (filmes.isEmpty()) {
             throw new EntidadeNaoEncontradaException("Nenhum filme cadastrado");
         }
-        return filmeRepository.findAll();
+        return filmes.stream().map(filmeMapper::toDto).toList();
     }
 
-    public void removerPorId(Long id){
-        if (!filmeRepository.existsById(id)){
-            throw new EntidadeNaoEncontradaException("Nenhum filme com ID: " + id + " foi encontrado");
+    public void removerPorId(Long id) {
+        if (!filmeRepository.existsById(id)) {
+            throw new EntidadeNaoEncontradaException("Não foi possível deletar. Id: " + id + " não encontrado.");
         }
         filmeRepository.deleteById(id);
     }
 
-    public Filme atualizar(Long id, FilmeDTO filmeDTO){
-        Filme filme = filmeRepository.findById(id).orElseThrow(() -> new EntidadeNaoEncontradaException("Filme não encontrado"));
+    public FilmeResponse atualizar(Long id, FilmeUpdateRequest filmeDTO) {
 
-        if (filmeDTO.getTitulo() != null) {
-            filme.setTitulo(filmeDTO.getTitulo());
-        }
+        Filme filme = filmeRepository.findById(id)
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Não foi possível atualizar. Id: " + id + " não encontrado."));
 
-        if (filmeDTO.getDuracao() != null) {
-            filme.setDuracao(filmeDTO.getDuracao());
-        }
+        filmeMapper.updateEntityFromDto(filmeDTO, filme);
 
-        if (filmeDTO.getGenero() != null) {
-            filme.setGenero(filmeDTO.getGenero());
-        }
+        Filme filmeAtualizado = filmeRepository.save(filme);
 
-        if (filmeDTO.getDescricao() != null) {
-            filme.setDescricao(filmeDTO.getDescricao());
-        }
-
-        if (filmeDTO.getIdadeMinima() != null) {
-            filme.setIdadeMinima(filmeDTO.getIdadeMinima());
-        }
-
-        if (filmeDTO.getAnoLancamento() != null) {
-            filme.setAnoLancamento(filmeDTO.getAnoLancamento());
-        }
-
-        if (filmeDTO.getPreco() != null) {
-            filme.setPreco(filmeDTO.getPreco());
-        }
-
-        if (filmeDTO.getQuantidadeEstoque() != null) {
-            filme.setQuantidadeEstoque(filmeDTO.getQuantidadeEstoque());
-        }
-
-        return filmeRepository.save(filme);
+        return filmeMapper.toDto(filmeAtualizado);
 
     }
-
 }
